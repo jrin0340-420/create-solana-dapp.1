@@ -41,3 +41,13 @@ export function filterTemplates({
     return filters.every((filter) => haystack.includes(filter.toLowerCase()))
   })
 }
+
+export function listTemplatesJson({
+  filters = [],
+  templates,
+}: {
+  filters?: string[]
+  templates: TemplateJsonTemplate[]
+}): TemplateJsonTemplate[] {
+  return filterTemplates({ filters, templates })
+}

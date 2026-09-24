@@ -8,11 +8,12 @@ import { AppInfo } from './get-app-info'
 import { GetArgsResult } from './get-args-result'
 import { getMenuConfig } from './get-menu-config'
 import { getPrompts } from './get-prompts'
-import { getTemplateInfo } from './get-template-info'
+import { buildTemplateInfoData, formatTemplateInfo } from './get-template-info'
+import { getTemplateMetadata } from './get-template-metadata'
 import { getTemplatesUrl } from './get-templates-url'
 import { listTemplateIds } from './list-template-ids'
-import { listTemplateOptions } from './list-template-options'
-import { listTemplates } from './list-templates'
+import { buildTemplateOptionsData, formatTemplateOptions } from './list-template-options'
+import { listTemplates, listTemplatesJson } from './list-templates'
 import { listVersions } from './list-versions'
 import { runVersionCheck } from './run-version-check'
 import { Template } from './template'
@@ -31,6 +32,7 @@ export async function getArgs(argv: string[], app: AppInfo, pm: PackageManager =
     .option('--pnpm', help(`Use pnpm as the package manager`), false)
     .option('--bun', help(`Use bun as the package manager`), false)
     .option('-d, --dry-run', help('Dry run (default: false)'))
+    .option('--json', help('Output machine-readable JSON when supported'))
     .option('-t, --template <template-name>', help('Use a template'))
     .option('--list-template-ids', help('List available template ids as JSON array'))
     .option('--list-template-options', help('List available boolean flags for the selected template'))
@@ -79,6 +81,12 @@ Examples:
   }
 
   if (result.listTemplates) {
+    if (result.json) {
+      console.log(
+        JSON.stringify(listTemplatesJson({ filters: parseFilters(result.templateFilter), templates }), undefined, 2),
+      )
+      process.exit(0)
+    }
     listTemplates({ filters: parseFilters(result.templateFilter), templates })
     outro(
       `\uD83D\uDCA1 To use a template, run "${app.name}${name ? ` ${name}` : ''} --template <template-name>" or "--template <github-org>/<github-repo>" `,
@@ -93,7 +101,16 @@ Examples:
 
   if (result.templateInfo) {
     const template = findTemplate({ name: result.templateInfo, templates, verbose })
-    console.log(await getTemplateInfo({ template }))
+    const metadata = await getTemplateMetadata(template)
+    const data = buildTemplateInfoData({
+      initInstructions: metadata.init?.instructions,
+      keywords: template.keywords,
+      options: metadata.init?.options,
+      packageManager: metadata.packageManager,
+      template,
+      versions: metadata.init?.versions,
+    })
+    console.log(result.json ? JSON.stringify(data, undefined, 2) : formatTemplateInfo(data))
     process.exit(0)
   }
 
@@ -102,7 +119,9 @@ Examples:
       throw new Error(`The --list-template-options flag requires --template <template-name>.`)
     }
     const template = findTemplate({ name: result.template, templates, verbose })
-    console.log(await listTemplateOptions({ template }))
+    const metadata = await getTemplateMetadata(template)
+    const data = buildTemplateOptionsData({ options: metadata.init?.options, template })
+    console.log(result.json ? JSON.stringify(data, undefined, 2) : formatTemplateOptions(data))
     process.exit(0)
   }
 

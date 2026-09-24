@@ -53,6 +53,9 @@ You can inspect template metadata and discover flags before creating a project:
 # Show template details, including required tools and post-create instructions
 pnpm create solana-dapp@latest --template-info nextjs-anchor
 
+# Show the same information as JSON for scripting
+pnpm create solana-dapp@latest --template-info nextjs-anchor --json
+
 # List template-defined boolean flags for a specific template
 pnpm create solana-dapp@latest --template nextjs-anchor --list-template-options
 

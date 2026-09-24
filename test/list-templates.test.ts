@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { filterTemplates } from '../src/utils/list-templates'
+import { filterTemplates, listTemplatesJson } from '../src/utils/list-templates'
 import type { TemplateJsonTemplate } from '../src/utils/template-schema'
 
 const templates: TemplateJsonTemplate[] = [
@@ -29,5 +29,9 @@ describe('filterTemplates', () => {
   it('matches filters against keywords and other text fields', () => {
     expect(filterTemplates({ filters: ['ai'], templates })).toEqual([templates[0]])
     expect(filterTemplates({ filters: ['mobile', 'minimal'], templates })).toEqual([templates[1]])
+  })
+
+  it('returns filtered templates for JSON output', () => {
+    expect(listTemplatesJson({ filters: ['minimal'], templates })).toEqual([templates[1]])
   })
 })
