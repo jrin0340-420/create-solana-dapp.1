@@ -31,6 +31,10 @@ export function buildTemplateInfoData({
   template: Template
   versions?: Record<string, string | undefined>
 }) {
+  const requiredTools = Object.fromEntries(
+    Object.entries(versions ?? {}).filter((entry): entry is [string, string] => Boolean(entry[1])),
+  )
+
   return {
     description: template.description,
     id: template.id,
@@ -40,7 +44,7 @@ export function buildTemplateInfoData({
     optionFlags: formatOptionSummary(options),
     packageManager,
     path: template.path,
-    requiredTools: Object.fromEntries(Object.entries(versions ?? {}).filter(([, version]) => version)),
+    requiredTools,
     usecase: template.usecase,
   }
 }
@@ -92,7 +96,7 @@ function formatOptionSummary(options?: InitScriptOptions) {
 }
 
 function formatOptionLines(
-  options: Array<{ default: boolean; description: string | null; group: string | null; optionFlag: string }>,
+  options: Array<{ default: boolean; description?: string; group?: string; optionFlag: string }>,
 ) {
   if (options.length === 0) {
     return ['- None']
