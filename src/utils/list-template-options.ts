@@ -1,5 +1,5 @@
-import { InitScriptOptions } from './init-script-schema'
 import { getTemplateMetadata } from './get-template-metadata'
+import { InitScriptOptions } from './init-script-schema'
 import { Template } from './template'
 
 export async function listTemplateOptions({ template }: { template: Template }): Promise<string> {

@@ -1,13 +1,7 @@
 import { log } from '@clack/prompts'
 import { TemplateJsonTemplate } from './template-schema'
 
-export function listTemplates({
-  filters = [],
-  templates,
-}: {
-  filters?: string[]
-  templates: TemplateJsonTemplate[]
-}) {
+export function listTemplates({ filters = [], templates }: { filters?: string[]; templates: TemplateJsonTemplate[] }) {
   const filteredTemplates = filterTemplates({ filters, templates })
 
   if (filteredTemplates.length === 0) {

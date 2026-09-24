@@ -4,14 +4,14 @@ import * as process from 'node:process'
 import { extractTemplateOptionFlags } from './extract-template-option-flags'
 import { fetchTemplateData } from './fetch-template-data'
 import { findTemplate } from './find-template'
-import { getTemplateInfo } from './get-template-info'
 import { AppInfo } from './get-app-info'
 import { GetArgsResult } from './get-args-result'
 import { getMenuConfig } from './get-menu-config'
 import { getPrompts } from './get-prompts'
+import { getTemplateInfo } from './get-template-info'
 import { getTemplatesUrl } from './get-templates-url'
-import { listTemplateOptions } from './list-template-options'
 import { listTemplateIds } from './list-template-ids'
+import { listTemplateOptions } from './list-template-options'
 import { listTemplates } from './list-templates'
 import { listVersions } from './list-versions'
 import { runVersionCheck } from './run-version-check'
@@ -42,7 +42,10 @@ export async function getArgs(argv: string[], app: AppInfo, pm: PackageManager =
     .option('--skip-init', help('Skip running the init script'))
     .option('--skip-install', help('Skip installing dependencies'))
     .option('--skip-version-check', help('Skip checking for CLI updates (not recommended)'))
-    .option('--template-filter <filters>', help('Filter templates by keyword or text (comma-separated values supported)'))
+    .option(
+      '--template-filter <filters>',
+      help('Filter templates by keyword or text (comma-separated values supported)'),
+    )
     .option('--template-info <template-name>', help('Show detailed information for a template'))
     .option('--templates-url <url>', help('Url to templates.json'), getTemplatesUrl())
     .option('-v, --verbose', help('Verbose output (default: false)'))
@@ -188,8 +191,10 @@ function help(text: string) {
 }
 
 function parseFilters(input?: string): string[] {
-  return input
-    ?.split(',')
-    .map((filter) => filter.trim())
-    .filter(Boolean) ?? []
+  return (
+    input
+      ?.split(',')
+      .map((filter) => filter.trim())
+      .filter(Boolean) ?? []
+  )
 }

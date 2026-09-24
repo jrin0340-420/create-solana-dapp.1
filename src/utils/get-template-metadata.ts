@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { getPackageJson, PackageJson } from './get-package-json'
-import { initScriptKey, InitScript } from './init-script-schema'
+import { InitScript, initScriptKey } from './init-script-schema'
 import { Template } from './template'
 
 export interface TemplateMetadata {

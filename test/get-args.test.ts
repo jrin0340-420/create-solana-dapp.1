@@ -147,9 +147,23 @@ describe('getArgs', () => {
 
     expect(args).toMatchObject({
       name: 'my-app',
+      nonInteractive: false,
       skipInstall: true,
       template,
       templateOptions: ['llamacpp'],
+    })
+  })
+
+  it('supports non-interactive mode for scripted usage', async () => {
+    const args = await getArgs(
+      ['node', 'create-solana-dapp', 'my-app', '--template', 'basic', '--non-interactive', '--skip-version-check'],
+      app,
+    )
+
+    expect(args).toMatchObject({
+      name: 'my-app',
+      nonInteractive: true,
+      template,
     })
   })
 })

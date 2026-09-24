@@ -1,10 +1,17 @@
-import { InitScriptOptions } from './init-script-schema'
 import { getTemplateMetadata } from './get-template-metadata'
+import { InitScriptOptions } from './init-script-schema'
 import { Template } from './template'
 
 export async function getTemplateInfo({ template }: { template: Template }): Promise<string> {
   const metadata = await getTemplateMetadata(template)
-  return formatTemplateInfo({ options: metadata.init?.options, template, ...metadata })
+  return formatTemplateInfo({
+    initInstructions: metadata.init?.instructions,
+    keywords: template.keywords,
+    options: metadata.init?.options,
+    packageManager: metadata.packageManager,
+    template,
+    versions: metadata.init?.versions,
+  })
 }
 
 export function formatTemplateInfo({

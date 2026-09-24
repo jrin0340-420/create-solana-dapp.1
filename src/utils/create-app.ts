@@ -72,11 +72,7 @@ export async function createApp(args: CreateAppArgs): Promise<CreateAppResult> {
 
     const doctorInstructions = await runEnvironmentDoctor(init?.versions, args.verbose)
 
-    return [
-      ...instructions,
-      ...remainingInstructions,
-      ...doctorInstructions,
-    ]
+    return [...instructions, ...remainingInstructions, ...doctorInstructions]
   } catch (error) {
     if (!targetExisted) {
       rmSync(args.targetDirectory, { force: true, recursive: true })

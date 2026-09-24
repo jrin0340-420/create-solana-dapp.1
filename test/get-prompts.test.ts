@@ -118,4 +118,21 @@ describe('getPrompts', () => {
 
     expect(getTextOptions().initialValue).toBeUndefined()
   })
+
+  it('fails fast in non-interactive mode when required values are missing', async () => {
+    expect(() => getPrompts({ items, options: getOptions({ nonInteractive: true }) })).toThrow(
+      'Non-interactive mode requires --template <template-name>.',
+    )
+  })
+
+  it('returns existing values in non-interactive mode', async () => {
+    const result = await getPrompts({
+      items,
+      options: getOptions({ name: 'my-app', nonInteractive: true, template }),
+    })
+
+    expect(result).toEqual({ name: 'my-app', template })
+    expect(select).not.toHaveBeenCalled()
+    expect(text).not.toHaveBeenCalled()
+  })
 })
