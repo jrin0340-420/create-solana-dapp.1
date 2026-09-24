@@ -14,6 +14,7 @@ import { resolveInitScriptOptions } from './init-script-options'
 import { initScriptPackageManager } from './init-script-package-manager'
 import { initScriptKey } from './init-script-schema'
 import { removeIncompatiblePackageManager } from './remove-incompatible-package-manager'
+import { runEnvironmentDoctor } from './run-environment-doctor'
 import { tasks } from './vendor/clack-tasks'
 
 export type CreateAppArgs = GetArgsResult
@@ -54,22 +55,27 @@ export async function createApp(args: CreateAppArgs): Promise<CreateAppResult> {
     const init = contents[initScriptKey]
     const options = args.skipInit ? [] : resolveInitScriptOptions(init?.options, args.templateOptions ?? [])
 
+    const remainingInstructions = await tasks([
+      // Run the (optional) scripts declared by the selected template options
+      createAppTaskRunOptionScript(args, options),
+      // Install the dependencies
+      createAppTaskInstallDependencies(args),
+      // Run the (optional) setup script defined in package.json (e.g. build anchor program)
+      createAppTaskRunSetup(args),
+      // Install skills for AI coding agents
+      createAppTaskInstallSkills(args),
+      // Run the (optional) init script defined in package.json
+      createAppTaskRunInitScript(args, init, options),
+      // Initialize git repository
+      createAppTaskInitializeGit(args),
+    ])
+
+    const doctorInstructions = await runEnvironmentDoctor(init?.versions, args.verbose)
+
     return [
       ...instructions,
-      ...(await tasks([
-        // Run the (optional) scripts declared by the selected template options
-        createAppTaskRunOptionScript(args, options),
-        // Install the dependencies
-        createAppTaskInstallDependencies(args),
-        // Run the (optional) setup script defined in package.json (e.g. build anchor program)
-        createAppTaskRunSetup(args),
-        // Install skills for AI coding agents
-        createAppTaskInstallSkills(args),
-        // Run the (optional) init script defined in package.json
-        createAppTaskRunInitScript(args, init, options),
-        // Initialize git repository
-        createAppTaskInitializeGit(args),
-      ])),
+      ...remainingInstructions,
+      ...doctorInstructions,
     ]
   } catch (error) {
     if (!targetExisted) {

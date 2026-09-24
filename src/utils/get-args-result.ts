@@ -6,6 +6,7 @@ export interface GetArgsResult {
   app: AppInfo
   dryRun: boolean
   name: string
+  nonInteractive?: boolean
   packageManager: PackageManager
   /** Treated as true when omitted by programmatic callers. */
   packageManagerExplicit?: boolean

@@ -4,11 +4,13 @@ import * as process from 'node:process'
 import { extractTemplateOptionFlags } from './extract-template-option-flags'
 import { fetchTemplateData } from './fetch-template-data'
 import { findTemplate } from './find-template'
+import { getTemplateInfo } from './get-template-info'
 import { AppInfo } from './get-app-info'
 import { GetArgsResult } from './get-args-result'
 import { getMenuConfig } from './get-menu-config'
 import { getPrompts } from './get-prompts'
 import { getTemplatesUrl } from './get-templates-url'
+import { listTemplateOptions } from './list-template-options'
 import { listTemplateIds } from './list-template-ids'
 import { listTemplates } from './list-templates'
 import { listVersions } from './list-versions'
@@ -31,13 +33,17 @@ export async function getArgs(argv: string[], app: AppInfo, pm: PackageManager =
     .option('-d, --dry-run', help('Dry run (default: false)'))
     .option('-t, --template <template-name>', help('Use a template'))
     .option('--list-template-ids', help('List available template ids as JSON array'))
+    .option('--list-template-options', help('List available boolean flags for the selected template'))
     .option('--list-templates', help('List available templates'))
     .option('--list-versions', help('Verify your versions of Anchor, AVM, Rust, and Solana'))
     .option('--minimal', help(`Select the minimal template (${minimalTemplateName})`), false)
+    .option('--non-interactive', help('Fail instead of prompting for missing input'))
     .option('--skip-git', help('Skip git initialization'))
     .option('--skip-init', help('Skip running the init script'))
     .option('--skip-install', help('Skip installing dependencies'))
     .option('--skip-version-check', help('Skip checking for CLI updates (not recommended)'))
+    .option('--template-filter <filters>', help('Filter templates by keyword or text (comma-separated values supported)'))
+    .option('--template-info <template-name>', help('Show detailed information for a template'))
     .option('--templates-url <url>', help('Url to templates.json'), getTemplatesUrl())
     .option('-v, --verbose', help('Verbose output (default: false)'))
     .helpOption('-h, --help', help('Display help for command'))
@@ -70,7 +76,7 @@ Examples:
   }
 
   if (result.listTemplates) {
-    listTemplates({ templates })
+    listTemplates({ filters: parseFilters(result.templateFilter), templates })
     outro(
       `\uD83D\uDCA1 To use a template, run "${app.name}${name ? ` ${name}` : ''} --template <template-name>" or "--template <github-org>/<github-repo>" `,
     )
@@ -81,6 +87,22 @@ Examples:
     console.log(JSON.stringify(listTemplateIds({ templates })))
     process.exit(0)
   }
+
+  if (result.templateInfo) {
+    const template = findTemplate({ name: result.templateInfo, templates, verbose })
+    console.log(await getTemplateInfo({ template }))
+    process.exit(0)
+  }
+
+  if (result.listTemplateOptions) {
+    if (!result.template) {
+      throw new Error(`The --list-template-options flag requires --template <template-name>.`)
+    }
+    const template = findTemplate({ name: result.template, templates, verbose })
+    console.log(await listTemplateOptions({ template }))
+    process.exit(0)
+  }
+
   let packageManager = result.packageManager ?? pm
   const packageManagerExplicit = Boolean(result.packageManager || result.pnpm || result.yarn || result.bun)
 
@@ -127,6 +149,7 @@ Examples:
     app,
     dryRun: result.dryRun ?? false,
     name: name ?? '',
+    nonInteractive: result.nonInteractive ?? false,
     packageManager,
     packageManagerExplicit,
     skipGit: result.skipGit ?? false,
@@ -162,4 +185,11 @@ function help(text: string) {
   return `
 
   ${text}`
+}
+
+function parseFilters(input?: string): string[] {
+  return input
+    ?.split(',')
+    .map((filter) => filter.trim())
+    .filter(Boolean) ?? []
 }
