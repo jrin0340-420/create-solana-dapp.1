@@ -5,6 +5,7 @@ import { GetArgsResult } from '../src/utils/get-args-result'
 import { getPackageJson } from '../src/utils/get-package-json'
 import { resolveInitScriptOptions } from '../src/utils/init-script-options'
 import { initScriptPackageManager } from '../src/utils/init-script-package-manager'
+import { runEnvironmentDoctor } from '../src/utils/run-environment-doctor'
 import { tasks } from '../src/utils/vendor/clack-tasks'
 
 vi.mock('../src/utils/create-app-task-install-dependencies', () => ({
@@ -21,6 +22,9 @@ vi.mock('../src/utils/init-script-options', () => ({
 }))
 vi.mock('../src/utils/init-script-package-manager', () => ({
   initScriptPackageManager: vi.fn(),
+}))
+vi.mock('../src/utils/run-environment-doctor', () => ({
+  runEnvironmentDoctor: vi.fn(() => Promise.resolve([])),
 }))
 vi.mock('../src/utils/vendor/clack-tasks', () => ({
   taskFail: vi.fn(),
@@ -66,6 +70,25 @@ describe('createApp', () => {
     expect(vi.mocked(initScriptPackageManager).mock.invocationCallOrder[0]).toBeLessThan(
       vi.mocked(createAppTaskInstallDependencies).mock.invocationCallOrder[0],
     )
+    expect(runEnvironmentDoctor).toHaveBeenCalledWith(undefined, false)
     expect(result).toEqual(['clone instruction', 'remaining instruction'])
+  })
+
+  it('appends environment doctor notes to the final instructions', async () => {
+    vi.mocked(tasks).mockResolvedValueOnce(['clone instruction']).mockResolvedValueOnce(['remaining instruction'])
+    vi.mocked(getPackageJson).mockReturnValue({
+      contents: { 'create-solana-dapp': { versions: { anchor: '0.31.1' } } },
+      path: '/template/package.json',
+    })
+    vi.mocked(runEnvironmentDoctor).mockResolvedValue(['Environment doctor:', 'Anchor update needed'])
+
+    const result = await createApp({ ...args })
+
+    expect(result).toEqual([
+      'clone instruction',
+      'remaining instruction',
+      'Environment doctor:',
+      'Anchor update needed',
+    ])
   })
 })

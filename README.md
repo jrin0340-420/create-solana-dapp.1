@@ -45,6 +45,26 @@ pnpm create solana-dapp@latest -t <github-org>/<github-repo>
 yarn create solana-dapp -t <github-org>/<github-repo>
 ```
 
+## Inspect templates before generating
+
+You can inspect template metadata and discover flags before creating a project:
+
+```shell
+# Show template details, including required tools and post-create instructions
+pnpm create solana-dapp@latest --template-info nextjs-anchor
+
+# Show the same information as JSON for scripting
+pnpm create solana-dapp@latest --template-info nextjs-anchor --json
+
+# List template-defined boolean flags for a specific template
+pnpm create solana-dapp@latest --template nextjs-anchor --list-template-options
+
+# Filter the template catalog by keyword or text
+pnpm create solana-dapp@latest --list-templates --template-filter mobile,minimal
+```
+
+For automation and CI, `--non-interactive` makes the CLI fail fast instead of opening prompts when required values are missing.
+
 ## Init script
 
 Template authors can add an init script to the `package.json` file to help set up the project.
